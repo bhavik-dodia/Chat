@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../helpers/curved_painter.dart';
-import '../widgets/login.dart';
-import '../widgets/login_option.dart';
-import '../widgets/signup.dart';
-import '../widgets/signup_option.dart';
+import '../widgets/auth/login.dart';
+import '../widgets/auth/login_option.dart';
+import '../widgets/auth/signup.dart';
+import '../widgets/auth/signup_option.dart';
 
 class AuthPage extends StatefulWidget {
   @override
@@ -80,7 +80,10 @@ class _AuthPageState extends State<AuthPage> {
                                 vertical: 16,
                               ),
                               child: !login
-                                  ? SignUp()
+                                  ? SignUp(
+                                      goToLogin: () =>
+                                          setState(() => login = true),
+                                    )
                                   : SignUpOption(
                                       onPressed: () =>
                                           setState(() => login = false),
@@ -150,7 +153,10 @@ class _AuthPageState extends State<AuthPage> {
                                 vertical: 16,
                               ),
                               child: !login
-                                  ? SignUp()
+                                  ? SignUp(
+                                      goToLogin: () =>
+                                          setState(() => login = true),
+                                    )
                                   : SignUpOption(
                                       onPressed: () =>
                                           setState(() => login = false),

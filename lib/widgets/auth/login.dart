@@ -14,9 +14,8 @@ class _LoginState extends State<Login> {
       r'^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&-+=()])(?=\S+$).{8,}$');
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _passwordNode = FocusNode();
-  final _auth = FirebaseAuth.instance;
   bool ot = true, _isLoading = false;
-  String _userEmail = '', _userName = '', _userPassword = '';
+  String _userEmail = '', _userPassword = '';
 
   @override
   void dispose() {
@@ -30,7 +29,7 @@ class _LoginState extends State<Login> {
       _formKey.currentState.save();
       try {
         setState(() => _isLoading = true);
-        final authResult = await _auth
+        await FirebaseAuth.instance
             .signInWithEmailAndPassword(
               email: _userEmail,
               password: _userPassword,
@@ -38,7 +37,6 @@ class _LoginState extends State<Login> {
             .whenComplete(
               () => setState(() => _isLoading = false),
             );
-        print(authResult.user.email);
       } on FirebaseAuthException catch (e) {
         var message = 'An error occurred, please check your credentials!';
         if (e.message != null) message = e.message;

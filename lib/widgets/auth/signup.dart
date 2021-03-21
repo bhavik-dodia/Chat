@@ -1,8 +1,18 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'input_image.dart';
+
 class SignUp extends StatefulWidget {
+  final Function goToLogin;
+
+  const SignUp({Key key, this.goToLogin}) : super(key: key);
   @override
   _SignUpState createState() => _SignUpState();
 }
@@ -13,11 +23,13 @@ class _SignUpState extends State<SignUp> {
   final _passRegex = RegExp(
       r'^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&-+=()])(?=\S+$).{8,}$');
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final _auth = FirebaseAuth.instance;
   final _emailNode = FocusNode();
   final _passwordNode = FocusNode();
   bool ot = true, _isLoading = false;
   String _userEmail = '', _userName = '', _userPassword = '';
+  File _pickedImage;
+
+  void _selectImage(File pickedImage) => _pickedImage = pickedImage;
 
   @override
   void dispose() {
@@ -29,10 +41,21 @@ class _SignUpState extends State<SignUp> {
   void _trySubmit() async {
     if (_formKey.currentState.validate()) {
       FocusScope.of(context).unfocus();
+
+      if (_pickedImage == null) {
+        _showSnackBar('Please select an image');
+        return;
+      }
+
       _formKey.currentState.save();
+      FirebaseApp tempApp;
       try {
+        tempApp = await Firebase.initializeApp(
+          name: 'tempRegister',
+          options: Firebase.app().options,
+        );
         setState(() => _isLoading = true);
-        final authResult = await _auth
+        final authResult = await FirebaseAuth.instanceFor(app: tempApp)
             .createUserWithEmailAndPassword(
               email: _userEmail,
               password: _userPassword,
@@ -40,34 +63,56 @@ class _SignUpState extends State<SignUp> {
             .whenComplete(
               () => setState(() => _isLoading = false),
             );
-        print(authResult.user.email);
+        widget.goToLogin();
+        final ref = FirebaseStorage.instanceFor(app: tempApp)
+            .ref()
+            .child('user_images')
+            .child(authResult.user.uid + '.jpg');
+        await ref.putFile(_pickedImage);
+        final url = await ref.getDownloadURL();
+        await FirebaseFirestore.instanceFor(app: tempApp)
+            .collection('users')
+            .doc(authResult.user.uid)
+            .set({
+          'name': _userName,
+          'email': _userEmail,
+          'image url': url,
+        });
       } on FirebaseAuthException catch (e) {
+        tempApp?.delete();
         var message = 'An error occurred, please check your credentials!';
         if (e.message != null) message = e.message;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            elevation: 8.0,
-            margin: const EdgeInsets.all(8.0),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Theme.of(context).cardColor,
-            duration: const Duration(seconds: 3),
-            content: Text(
-              message,
-              style: TextStyle(
-                color: Theme.of(context).brightness == Brightness.light
-                    ? Colors.black
-                    : Colors.white,
-              ),
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-          ),
-        );
+        _showSnackBar(message);
       } catch (e) {
+        tempApp?.delete();
         print(e.message);
+      } finally {
+        tempApp?.delete();
       }
     }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        elevation: 8.0,
+        margin: const EdgeInsets.all(8.0),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Theme.of(context).cardColor,
+        duration: const Duration(seconds: 3),
+        content: Text(
+          message,
+          style: TextStyle(
+            color: Theme.of(context).brightness == Brightness.light
+                ? Colors.black
+                : Colors.white,
+          ),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+      ),
+    );
   }
 
   @override
@@ -95,7 +140,7 @@ class _SignUpState extends State<SignUp> {
             height: 1,
           ),
         ),
-        SizedBox(height: 16),
+        InputImage(onSelectImage: _selectImage),
         Form(
           key: _formKey,
           child: Column(
@@ -107,13 +152,14 @@ class _SignUpState extends State<SignUp> {
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
-                keyboardType: TextInputType.emailAddress,
+                keyboardType: TextInputType.text,
+                textCapitalization: TextCapitalization.words,
                 decoration: InputDecoration(
                   prefixIcon: Icon(
                     Icons.person_outline_rounded,
                     color: Colors.blueAccent[100],
                   ),
-                  hintText: 'Username',
+                  hintText: 'Name',
                   hintStyle: TextStyle(
                     fontSize: 16,
                     color: Colors.blueAccent[100],
@@ -137,9 +183,7 @@ class _SignUpState extends State<SignUp> {
                 ),
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (value) {
-                  if (value.isEmpty) return 'Please enter a username';
-                  if (!value.startsWith('@'))
-                    return 'Username must start with @';
+                  if (value.isEmpty) return 'Please enter a name';
                   return null;
                 },
                 onSaved: (value) => _userName = value.trim(),
