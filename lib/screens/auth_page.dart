@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../helpers/curved_painter.dart';
+import '../helpers/curved_painter_helper.dart';
 import '../widgets/auth/login.dart';
 import '../widgets/auth/login_option.dart';
 import '../widgets/auth/signup.dart';

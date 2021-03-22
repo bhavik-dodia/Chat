@@ -15,8 +15,10 @@ dependencies:
   cupertino_icons: ^1.0.2
   firebase_auth: ^1.0.1
   firebase_core: ^1.0.1
+  firebase_messaging: ^9.0.0
   firebase_storage: ^8.0.0
   flutter_chat_bubble: ^1.0.2
+  flutter_local_notifications: ^5.0.0
   google_fonts: ^2.0.0
 
 dev_dependencies:

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat_bubble/bubble_type.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
 import 'package:flutter_chat_bubble/clippers/chat_bubble_clipper_3.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class MessageBubble extends StatelessWidget {
   final String message, imageUrl, name;
@@ -20,7 +21,7 @@ class MessageBubble extends StatelessWidget {
         //   elevation: 0,
         //   clipper: ChatBubbleClipper3(
         //     type: isSender ? BubbleType.sendBubble : BubbleType.receiverBubble,
-        //     radius: 22,
+        //     radius: 20,
         //   ),
         //   alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
         //   margin: isSender
@@ -33,8 +34,8 @@ class MessageBubble extends StatelessWidget {
         //       : Colors.grey[isLight ? 200 : 700],
         //   child: SelectableText(
         //     message,
-        //     style: TextStyle(
-        //       fontSize: 15,
+        //     style: GoogleFonts.overlock(
+        //       fontSize: 17,
         //       color: isSender
         //           ? isLight
         //               ? theme.accentColor
@@ -48,7 +49,7 @@ class MessageBubble extends StatelessWidget {
               elevation: 0,
               clipper: ChatBubbleClipper3(
                 type: BubbleType.sendBubble,
-                radius: 22,
+                radius: 20,
               ),
               alignment: Alignment.centerRight,
               margin: EdgeInsets.only(top: 15, left: pad),
@@ -57,8 +58,8 @@ class MessageBubble extends StatelessWidget {
                   : Colors.blueAccent[100],
               child: SelectableText(
                 message,
-                style: TextStyle(
-                  fontSize: 15,
+                style: GoogleFonts.overlock(
+                  fontSize: 17,
                   color: isLight ? theme.accentColor : Colors.black,
                 ),
               ),
@@ -67,8 +68,8 @@ class MessageBubble extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                    height: 45.0,
-                    width: 45.0,
+                    height: 40.0,
+                    width: 40.0,
                     decoration: BoxDecoration(
                       image: DecorationImage(
                         image: NetworkImage(imageUrl),
@@ -77,18 +78,20 @@ class MessageBubble extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                   ),
-                  ChatBubble(
-                    elevation: 0,
-                    clipper: ChatBubbleClipper3(
-                      type: BubbleType.receiverBubble,
-                      radius: 22,
-                    ),
-                    alignment: Alignment.centerLeft,
-                    margin: EdgeInsets.only(top: 15, right: pad),
-                    backGroundColor: Colors.grey[isLight ? 200 : 700],
-                    child: SelectableText(
-                      message,
-                      style: TextStyle(fontSize: 15),
+                  Expanded(
+                    child: ChatBubble(
+                      elevation: 0,
+                      clipper: ChatBubbleClipper3(
+                        type: BubbleType.receiverBubble,
+                        radius: 20,
+                      ),
+                      alignment: Alignment.centerLeft,
+                      margin: EdgeInsets.only(top: 15, right: pad),
+                      backGroundColor: Colors.grey[isLight ? 200 : 700],
+                      child: SelectableText(
+                        message,
+                        style: GoogleFonts.overlock(fontSize: 17),
+                      ),
                     ),
                   ),
               ],
