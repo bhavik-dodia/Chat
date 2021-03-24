@@ -1,8 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../models/chat_user.dart';
+
 class MessageInputBar extends StatefulWidget {
+  final String uid, convoID;
+  final ChatUser contact;
+
+  const MessageInputBar({Key key, this.uid, this.convoID, this.contact})
+      : super(key: key);
+
   @override
   _MessageInputBarState createState() => _MessageInputBarState();
 }
@@ -19,17 +26,41 @@ class _MessageInputBarState extends State<MessageInputBar> {
 
   void _sendMessage() async {
     _msgController.clear();
-    final user = FirebaseAuth.instance.currentUser;
-    final userData = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .get();
-    FirebaseFirestore.instance.collection('chats').add({
-      'text': _msg,
-      'created on': Timestamp.now(),
-      'user id': user.uid,
-      'name': userData.get('name'),
-      'image url': userData.get('image url'),
+    final content = _msg.trim();
+    _msg = '';
+    final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+    final DocumentReference conversationDoc =
+        FirebaseFirestore.instance.collection('conversations').doc(widget.convoID);
+
+    conversationDoc.set(<String, dynamic>{
+      'lastMessage': <String, dynamic>{
+        'idFrom': widget.uid,
+        'idTo': widget.contact.id,
+        'timestamp': timestamp,
+        'content': content,
+        'read': false
+      },
+      'users': <String>[widget.uid, widget.contact.id]
+    }).then((dynamic success) {
+      final DocumentReference messageDoc = FirebaseFirestore.instance
+          .collection('conversations')
+          .doc(widget.convoID)
+          .collection(widget.convoID)
+          .doc(timestamp);
+
+      FirebaseFirestore.instance
+          .runTransaction((Transaction transaction) async {
+        transaction.set(
+          messageDoc,
+          <String, dynamic>{
+            'idFrom': widget.uid,
+            'idTo': widget.contact.id,
+            'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
+            'content': content,
+            'read': false
+          },
+        );
+      });
     });
   }
 

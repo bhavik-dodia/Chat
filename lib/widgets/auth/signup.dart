@@ -51,7 +51,7 @@ class _SignUpState extends State<SignUp> {
       FirebaseApp tempApp;
       try {
         tempApp = await Firebase.initializeApp(
-          name: 'tempRegister',
+          name: 'tempApp',
           options: Firebase.app().options,
         );
         setState(() => _isLoading = true);
@@ -74,20 +74,21 @@ class _SignUpState extends State<SignUp> {
             .collection('users')
             .doc(authResult.user.uid)
             .set({
+          'id': authResult.user.uid,
           'name': _userName,
           'email': _userEmail,
-          'image url': url,
+          'imageUrl': url,
         });
       } on FirebaseAuthException catch (e) {
-        tempApp?.delete();
         var message = 'An error occurred, please check your credentials!';
         if (e.message != null) message = e.message;
         _showSnackBar(message);
+        await tempApp?.delete();
       } catch (e) {
-        tempApp?.delete();
         print(e.message);
+        await tempApp?.delete();
       } finally {
-        tempApp?.delete();
+        await tempApp?.delete();
       }
     }
   }

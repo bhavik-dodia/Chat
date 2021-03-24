@@ -1,17 +1,34 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'message_bubble.dart';
 
 class Messages extends StatelessWidget {
+  final String conversationID, uid;
+
+  const Messages({Key key, this.conversationID, this.uid}) : super(key: key);
+
+  void _updateMessageRead(DocumentSnapshot doc, String convoID) {
+    final DocumentReference documentReference = FirebaseFirestore.instance
+        .collection('conversations')
+        .doc(convoID)
+        .collection(convoID)
+        .doc(doc.id);
+
+    documentReference.set(
+      <String, dynamic>{'read': true},
+      SetOptions(merge: true),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final uid = FirebaseAuth.instance.currentUser.uid;
     return StreamBuilder(
       stream: FirebaseFirestore.instance
-          .collection('chats')
-          .orderBy('created on', descending: true)
+          .collection('conversations')
+          .doc(conversationID)
+          .collection(conversationID)
+          .orderBy('timestamp', descending: true)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -26,13 +43,18 @@ class Messages extends StatelessWidget {
               horizontal: 8.0,
             ),
             itemCount: docs.length,
-            itemBuilder: (context, index) => MessageBubble(
-              key: ValueKey(docs[index].id),
-              message: docs[index]['text'],
-              isSender: uid == docs[index]['user id'],
-              imageUrl: docs[index]['image url'],
-              name: docs[index]['name'],
-            ),
+            itemBuilder: (context, index) {
+              final doc = docs[index];
+              if (!doc['read'] && doc['idTo'] == uid)
+                _updateMessageRead(doc, conversationID);
+              return MessageBubble(
+                key: ValueKey(doc.id),
+                message: doc['content'],
+                isSender: uid == doc['idFrom'],
+                read:doc['read'],
+                timestamp: doc['timestamp'],
+              );
+            },
           );
         }
       },

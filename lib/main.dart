@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,9 +10,9 @@ import 'screens/home_page.dart';
 
 final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-      print('in onBackgroundMessage');
-  if (message.notification != null) print(message.notification.title);
+// Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+//   print('in onBackgroundMessage');
+//   if (message.notification != null) print(message.notification.title);
 
   // await flutterLocalNotificationsPlugin.show(
   //   0,
@@ -30,12 +29,16 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   //   ),
   //   payload: message.data.toString(),
   // );
-}
+// }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  // await Firebase.initializeApp(
+  //   name: 'tempApp',
+  //   options: Firebase.app().options,
+  // );
+  // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   Notifications.initializeNotifications();
   runApp(MyApp());
 }
