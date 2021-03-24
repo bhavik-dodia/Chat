@@ -26,11 +26,11 @@ class ConversationTile extends StatelessWidget {
     documentReference
         .set(<String, dynamic>{
           'lastMessage': <String, dynamic>{
-            'idFrom': doc['idFrom'],
-            'idTo': doc['idTo'],
-            'timestamp': doc['timestamp'],
-            'content': doc['content'],
-            'read': doc['read']
+            'idFrom': doc.get('idFrom'),
+            'idTo': doc.get('idTo'),
+            'timestamp': doc.get('timestamp'),
+            'content': doc.get('content'),
+            'read': doc.get('read'),
           },
           'users': <String>[uid, pid]
         })
@@ -64,15 +64,29 @@ class ConversationTile extends StatelessWidget {
     }
     groupId = getGroupChatId();
     return ListTile(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (BuildContext context) => ChatPage(
-            uid: user.uid,
-            peer: peer,
-            conversationID: getGroupChatId(),
+      onTap: () async {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (BuildContext context) => ChatPage(
+              uid: user.uid,
+              peer: peer,
+              conversationID: groupId,
+            ),
           ),
-        ),
-      ),
+        );
+        if (!read)
+          updateLastMessage(
+            await FirebaseFirestore.instance
+                .collection('conversations')
+                .doc(groupId)
+                .collection(groupId)
+                .doc(lastMessage['timestamp'])
+                .get(),
+            user.uid,
+            peer.id,
+            groupId,
+          );
+      },
       leading: Stack(
         children: [
           CircleAvatar(

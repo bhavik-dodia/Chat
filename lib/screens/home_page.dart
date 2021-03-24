@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:chat_app/widgets/profile/update_profile.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -45,6 +46,19 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  _showBottomSheet(QueryDocumentSnapshot snap) => showModalBottomSheet(
+        context: context,
+        clipBehavior: Clip.antiAlias,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(30.0),
+            topRight: Radius.circular(30.0),
+          ),
+        ),
+        isScrollControlled: true,
+        builder: (context) => UpdateProfile(snap: snap),
+      );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,9 +76,12 @@ class _HomePageState extends State<HomePage> {
                 );
               return Padding(
                 padding: const EdgeInsets.all(10.0),
-                child: CircleAvatar(
-                  backgroundImage: NetworkImage(
-                    snapshot.data.docs.single.get('imageUrl'),
+                child: InkWell(
+                  onTap: () => _showBottomSheet(snapshot.data.docs.single),
+                  child: CircleAvatar(
+                    backgroundImage: NetworkImage(
+                      snapshot.data.docs.single.get('imageUrl'),
+                    ),
                   ),
                 ),
               );
@@ -121,12 +138,16 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blueAccent,
+        tooltip: 'Start new conversation',
         onPressed: () => Navigator.of(context).push(
           MaterialPageRoute(
             builder: (BuildContext context) => NewConversationPage(),
           ),
         ),
-        child: Icon(Icons.chat_rounded, color: Colors.white,),
+        child: Icon(
+          Icons.chat_rounded,
+          color: Colors.white,
+        ),
       ),
     );
   }

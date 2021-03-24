@@ -1,8 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart' as syspath;
 
 import '../../helpers/channel_helper.dart';
 
@@ -64,10 +62,7 @@ class _InputImageState extends State<InputImage> {
     if (pickedImage != null) {
       final imageFile = File(pickedImage);
       setState(() => _selectedImage = imageFile);
-      final appDir = await syspath.getApplicationDocumentsDirectory();
-      final fileName = path.basename(imageFile.path);
-      final savedImage = await imageFile.copy('${appDir.path}/$fileName');
-      widget.onSelectImage(savedImage);
+      widget.onSelectImage(imageFile);
     } else {
       print('No image selected!!');
     }

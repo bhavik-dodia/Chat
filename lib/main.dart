@@ -14,30 +14,26 @@ final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 //   print('in onBackgroundMessage');
 //   if (message.notification != null) print(message.notification.title);
 
-  // await flutterLocalNotificationsPlugin.show(
-  //   0,
-  //   message.notification.title + 'from plugin in bg',
-  //   message.notification.body,
-  //   NotificationDetails(
-  //     android: AndroidNotificationDetails(
-  //       message.messageId,
-  //       'Notification',
-  //       'This channel is for notifications',
-  //       importance: Importance.max,
-  //       priority: Priority.max,
-  //     ),
-  //   ),
-  //   payload: message.data.toString(),
-  // );
+// await flutterLocalNotificationsPlugin.show(
+//   0,
+//   message.notification.title + 'from plugin in bg',
+//   message.notification.body,
+//   NotificationDetails(
+//     android: AndroidNotificationDetails(
+//       message.messageId,
+//       'Notification',
+//       'This channel is for notifications',
+//       importance: Importance.max,
+//       priority: Priority.max,
+//     ),
+//   ),
+//   payload: message.data.toString(),
+// );
 // }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  // await Firebase.initializeApp(
-  //   name: 'tempApp',
-  //   options: Firebase.app().options,
-  // );
   // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   Notifications.initializeNotifications();
   runApp(MyApp());

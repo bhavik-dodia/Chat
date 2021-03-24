@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../models/chat_user.dart';
 import '../widgets/chat/message_input_bar.dart';
@@ -23,26 +24,28 @@ class _ChatPageState extends State<ChatPage> {
         titleSpacing: 0,
         title: Row(
           children: [
-            Container(
-              height: 40.0,
-              width: 40.0,
-              margin: const EdgeInsets.only(right: 10),
-              decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: NetworkImage(
-                      widget.peer.imageUrl,
-                    ),
-                    fit: BoxFit.cover,
-                  ),
-                  shape: BoxShape.circle),
+            Padding(
+              padding: const EdgeInsets.only(right: 10.0),
+              child: CircleAvatar(
+                backgroundImage: NetworkImage(
+                  widget.peer.imageUrl,
+                ),
+              ),
             ),
             Expanded(
               child: Text(
                 widget.peer.name,
+                style: GoogleFonts.varelaRound(fontSize: 20.0),
                 overflow: TextOverflow.fade,
               ),
             ),
           ],
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(30.0),
+            bottomRight: Radius.circular(30.0),
+          ),
         ),
       ),
       body: Stack(
