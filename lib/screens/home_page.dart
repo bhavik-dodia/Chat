@@ -61,31 +61,33 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     return Scaffold(
       appBar: AppBar(
         leading: StreamBuilder(
-            stream: FirebaseFirestore.instance
-                .collection('users')
-                .where('id', isEqualTo: user.uid)
-                .snapshots(),
-            builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting)
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: CircleAvatar(child: Icon(Icons.person_rounded)),
-                );
-              return Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: InkWell(
-                  onTap: () => _showBottomSheet(snapshot.data.docs.single),
-                  child: CircleAvatar(
-                    backgroundImage: NetworkImage(
-                      snapshot.data.docs.single.get('imageUrl'),
+          stream: FirebaseFirestore.instance
+              .collection('users')
+              .where('id', isEqualTo: user.uid)
+              .snapshots(),
+          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) =>
+              snapshot.connectionState == ConnectionState.waiting
+                  ? Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: CircleAvatar(child: Icon(Icons.person_rounded)),
+                    )
+                  : Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: InkWell(
+                        onTap: () =>
+                            _showBottomSheet(snapshot.data.docs.single),
+                        child: CircleAvatar(
+                          backgroundImage: NetworkImage(
+                            snapshot.data.docs.single.get('imageUrl'),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              );
-            }),
+        ),
         title: Text(
           'Chats',
           style: GoogleFonts.varelaRound(fontSize: 25.0),
@@ -115,25 +117,48 @@ class _HomePageState extends State<HomePage> {
                 .map((DocumentSnapshot doc) => Conversation.fromFireStore(doc))
                 .toList()),
         builder: (context, snapshot) {
-          final conversations = snapshot?.data ?? [];
-          return snapshot.connectionState == ConnectionState.waiting
-              ? Container()
-              : ListView.separated(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.only(top: 100.0),
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: conversations.length,
-                  itemBuilder: (context, index) {
-                    final conversation = conversations[index];
-                    return ConversationTile(
-                      user: user,
-                      peer: userMap[conversation.userIds[
-                          conversation.userIds[0] == user.uid ? 1 : 0]],
-                      lastMessage: conversation.lastMessage,
-                    );
-                  },
-                  separatorBuilder: (context, index) => Divider(height: 5.0),
-                );
+          if (snapshot.connectionState == ConnectionState.waiting)
+            return CircularProgressIndicator.adaptive();
+          else {
+            final conversations = snapshot.data;
+            return conversations.isEmpty
+                ? Container(
+                    margin: const EdgeInsets.only(top: 100.0),
+                    child: MediaQuery.of(context).orientation ==
+                            Orientation.portrait
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              buildImage(isLight),
+                              const SizedBox(height: 40.0),
+                              buildText(),
+                            ],
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Expanded(child: buildImage(isLight)),
+                              Expanded(child: buildText()),
+                            ],
+                          ),
+                  )
+                : ListView.separated(
+                    shrinkWrap: true,
+                    padding: const EdgeInsets.only(top: 100.0),
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: conversations.length,
+                    itemBuilder: (context, index) {
+                      final conversation = conversations[index];
+                      return ConversationTile(
+                        user: user,
+                        peer: userMap[conversation.userIds[
+                            conversation.userIds[0] == user.uid ? 1 : 0]],
+                        lastMessage: conversation.lastMessage,
+                      );
+                    },
+                    separatorBuilder: (context, index) => Divider(height: 5.0),
+                  );
+          }
         },
       ),
       floatingActionButton: FloatingActionButton(
@@ -148,6 +173,26 @@ class _HomePageState extends State<HomePage> {
           Icons.chat_rounded,
           color: Colors.white,
         ),
+      ),
+    );
+  }
+
+  AspectRatio buildImage(bool isLight) {
+    return AspectRatio(
+      aspectRatio: 4 / 3,
+      child: Image.asset(
+        'images/conversation_${isLight ? 'light' : 'dark'}.png',
+      ),
+    );
+  }
+
+  Container buildText() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 30.0),
+      child: const Text(
+        '"Conversation is a catalyst for innnovation." ~John Seely Brown\n\nLet\'s start one, Shall we?',
+        textAlign: TextAlign.center,
+        softWrap: true,
       ),
     );
   }

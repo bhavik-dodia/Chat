@@ -69,7 +69,11 @@ class MessageBubble extends StatelessWidget {
                 getTime(timestamp),
                 style: TextStyle(
                   fontSize: 10.0,
-                  color: isSender?isLight ? Colors.grey : Colors.grey[850]:Colors.grey[isLight?500:300],
+                  color: isSender
+                      ? isLight
+                          ? Colors.grey
+                          : Colors.grey[850]
+                      : Colors.grey[isLight ? 500 : 300],
                 ),
               ),
               Visibility(

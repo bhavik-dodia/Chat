@@ -27,7 +27,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
   void _sendMessage() async {
     _msgController.clear();
     final content = _msg.trim();
-    _msg = '';
+    setState(() => _msg = '');
     final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
     final DocumentReference conversationDoc =
         FirebaseFirestore.instance.collection('conversations').doc(widget.convoID);
@@ -49,8 +49,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
           .doc(timestamp);
 
       FirebaseFirestore.instance
-          .runTransaction((Transaction transaction) async {
-        transaction.set(
+          .runTransaction((Transaction transaction) async => transaction.set(
           messageDoc,
           <String, dynamic>{
             'idFrom': widget.uid,
@@ -59,8 +58,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
             'content': content,
             'read': false
           },
-        );
-      });
+        ));
     });
   }
 

@@ -27,6 +27,7 @@ class NewConversationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      minVerticalPadding: 20.0,
       onTap: () => _createConversation(context),
       leading: CircleAvatar(
         radius: 25,

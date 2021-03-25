@@ -18,12 +18,11 @@ class UpdateProfile extends StatefulWidget {
 
 class _UpdateProfileState extends State<UpdateProfile> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  Channel channel = Channel();
+  String url;
   File _selectedImage;
-
-  TextEditingController _nameController;
-
   bool _isLoading = false;
+  Channel channel = Channel();
+  TextEditingController _nameController;
 
   @override
   void initState() {
@@ -50,20 +49,14 @@ class _UpdateProfileState extends State<UpdateProfile> {
           children: [
             ListTile(
               leading: Icon(Icons.camera_alt_rounded),
-              title: Text('Take Picture'),
-              onTap: () {
-                Navigator.of(context).pop(true);
-                // _selectPicture(ImageSource.camera);
-              },
+              title: Text('Take a Picture'),
+              onTap: () => Navigator.of(context).pop(true),
             ),
             Divider(indent: 15.0, endIndent: 15.0),
             ListTile(
               leading: Icon(Icons.photo_library_rounded),
-              title: Text('From Gallery'),
-              onTap: () {
-                Navigator.of(context).pop(false);
-                // _selectPicture(ImageSource.gallery);
-              },
+              title: Text('Choose from Gallery'),
+              onTap: () => Navigator.of(context).pop(false),
             ),
           ],
         ),
@@ -91,27 +84,26 @@ class _UpdateProfileState extends State<UpdateProfile> {
   void _trySubmit() async {
     if (_formKey.currentState.validate()) {
       FocusScope.of(context).unfocus();
-
-      if (_selectedImage == null) {
-        _showSnackBar('Please select an image');
-        return;
-      }
-
+      if (_nameController.text.trim() == widget.snap.get('name') &&
+          _selectedImage == null) return;
       _formKey.currentState.save();
       try {
         setState(() => _isLoading = true);
-        final ref = FirebaseStorage.instance
-            .ref()
-            .child('user_images')
-            .child(widget.snap.id + '.jpg');
-        await ref.putFile(_selectedImage);
-        final url = await ref.getDownloadURL();
+        if (_selectedImage != null) {
+          final ref = FirebaseStorage.instance
+              .ref()
+              .child('user_images')
+              .child(widget.snap.id + '.jpg');
+          await ref.putFile(_selectedImage);
+          url = await ref.getDownloadURL();
+        }
         await FirebaseFirestore.instance
             .collection('users')
             .doc(widget.snap.id)
             .update({
           'name': _nameController.text,
-          'imageUrl': url,
+          'imageUrl':
+              _selectedImage == null ? widget.snap.get('imageUrl') : url,
         }).whenComplete(
           () => setState(() => _isLoading = false),
         );
@@ -291,18 +283,22 @@ class _UpdateProfileState extends State<UpdateProfile> {
           color: Colors.grey.withOpacity(0.2),
         ),
         child: _selectedImage != null
-            ? Image.file(
-                _selectedImage,
-                fit: BoxFit.cover,
-                frameBuilder: (context, child, frame, wasSynchronouslyLoaded) =>
-                    wasSynchronouslyLoaded
-                        ? child
-                        : AnimatedOpacity(
-                            child: child,
-                            opacity: frame == null ? 0 : 1,
-                            duration: const Duration(seconds: 1),
-                            curve: Curves.easeOut,
-                          ),
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(19.0),
+                child: Image.file(
+                  _selectedImage,
+                  fit: BoxFit.cover,
+                  frameBuilder:
+                      (context, child, frame, wasSynchronouslyLoaded) =>
+                          wasSynchronouslyLoaded
+                              ? child
+                              : AnimatedOpacity(
+                                  child: child,
+                                  opacity: frame == null ? 0 : 1,
+                                  duration: const Duration(seconds: 1),
+                                  curve: Curves.easeOut,
+                                ),
+                ),
               )
             : ClipRRect(
                 borderRadius: BorderRadius.circular(19.0),

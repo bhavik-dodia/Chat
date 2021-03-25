@@ -37,9 +37,9 @@ class NewConversationPage extends StatelessWidget {
         builder: (context, AsyncSnapshot<List<ChatUser>> snapshot) {
           print(snapshot.data);
           return snapshot.data != null
-              ? ListView.separated(
+              ? ListView.builder(
                   shrinkWrap: true,
-                  padding: const EdgeInsets.only(top: 80.0),
+                  padding: const EdgeInsets.only(top: 100.0),
                   physics: const BouncingScrollPhysics(),
                   itemCount: snapshot.data.length,
                   itemBuilder: (context, index) => Visibility(
@@ -49,7 +49,6 @@ class NewConversationPage extends StatelessWidget {
                       contact: snapshot.data[index],
                     ),
                   ),
-                  separatorBuilder: (context, index) => Divider(),
                 )
               : Container();
         },
