@@ -64,8 +64,9 @@ class ConversationTile extends StatelessWidget {
     }
     groupId = getGroupChatId();
     return ListTile(
-      onTap: () async {
-        Navigator.of(context).push(
+      onTap: () {
+        Navigator.of(context)
+            .push(
           MaterialPageRoute(
             builder: (BuildContext context) => ChatPage(
               uid: user.uid,
@@ -73,19 +74,21 @@ class ConversationTile extends StatelessWidget {
               conversationID: groupId,
             ),
           ),
-        );
-        if (!read)
-          updateLastMessage(
-            await FirebaseFirestore.instance
-                .collection('conversations')
-                .doc(groupId)
-                .collection(groupId)
-                .doc(lastMessage['timestamp'])
-                .get(),
-            user.uid,
-            peer.id,
-            groupId,
-          );
+        )
+            .whenComplete(() async {
+          if (!read)
+            updateLastMessage(
+              await FirebaseFirestore.instance
+                  .collection('conversations')
+                  .doc(groupId)
+                  .collection(groupId)
+                  .doc(lastMessage['timestamp'])
+                  .get(),
+              user.uid,
+              peer.id,
+              groupId,
+            );
+        });
       },
       leading: Stack(
         children: [
