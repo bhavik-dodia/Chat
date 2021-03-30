@@ -41,14 +41,23 @@ class ConversationTile extends StatelessWidget {
   }
 
   String getTime(String timestamp) {
-    DateTime dateTime =
-        DateTime.fromMillisecondsSinceEpoch(int.parse(timestamp));
-    DateFormat format;
-    format = dateTime.difference(DateTime.now()).inMilliseconds <= 86400000
-        ? DateFormat('jm')
-        : DateFormat.yMd('en_US');
-    return format
-        .format(DateTime.fromMillisecondsSinceEpoch(int.parse(timestamp)));
+    final now = DateTime.now();
+    final dateTime = DateTime.fromMillisecondsSinceEpoch(
+      int.parse(timestamp),
+    );
+    if (dateTime.difference(now).inMinutes == 0) {
+      return 'Just now';
+    } else if (dateTime.difference(now).inDays == 1) {
+      return 'Yesterday';
+    } else if (dateTime.difference(now).inDays == 0) {
+      return DateFormat.jm().format(dateTime);
+    } else if (dateTime.difference(now).inDays <= 7) {
+      return DateFormat.EEEE().format(dateTime);
+    } else if (dateTime.difference(now).inDays <= 365) {
+      return DateFormat.MMMd().format(dateTime);
+    } else {
+      return DateFormat.yMMMd().format(dateTime);
+    }
   }
 
   String getGroupChatId() => user.uid.hashCode <= peer.id.hashCode
@@ -127,11 +136,41 @@ class ConversationTile extends StatelessWidget {
           ),
         ],
       ),
-      subtitle: Text(
-        lastMessage['content'],
-        style: TextStyle(color: Colors.grey),
-        overflow: TextOverflow.fade,
-        maxLines: 1,
+      subtitle: Row(
+        children: [
+          Visibility(
+            visible: lastMessage['idFrom'] == user.uid,
+            child: StreamBuilder(
+              stream: FirebaseFirestore.instance
+                  .collection('conversations')
+                  .doc(groupId)
+                  .collection(groupId)
+                  // .orderBy('timestamp', descending: true)
+                  .snapshots(),
+              builder: (context, snapshot) => snapshot.data != null
+                  ? Icon(
+                      Icons.done_all_rounded,
+                      color: snapshot.data.docs.last['read']
+                          ? Colors.blueAccent
+                          : Colors.grey,
+                      size: 18.0,
+                    )
+                  : const SizedBox(),
+            ),
+          ),
+          Visibility(
+            visible: lastMessage['idFrom'] == user.uid,
+            child: const SizedBox(width: 5.0),
+          ),
+          Expanded(
+            child: Text(
+              lastMessage['content'],
+              style: TextStyle(color: Colors.grey),
+              overflow: TextOverflow.fade,
+              maxLines: 1,
+            ),
+          ),
+        ],
       ),
     );
   }

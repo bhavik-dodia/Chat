@@ -66,9 +66,11 @@ class Messages extends StatelessWidget {
               : ListView.builder(
                   reverse: true,
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 75.0,
-                    horizontal: 8.0,
+                  padding: const EdgeInsets.only(
+                    top: 7.5,
+                    bottom: 65.0,
+                    left: 8.0,
+                    right: 8.0,
                   ),
                   itemCount: docs.length,
                   itemBuilder: (context, index) {

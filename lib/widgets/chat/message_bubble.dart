@@ -14,14 +14,23 @@ class MessageBubble extends StatelessWidget {
       : super(key: key);
 
   String getTime(String timestamp) {
-    DateTime dateTime =
-        DateTime.fromMillisecondsSinceEpoch(int.parse(timestamp));
-    DateFormat format;
-    format = dateTime.difference(DateTime.now()).inMilliseconds <= 86400000
-        ? DateFormat('jm')
-        : DateFormat.yMd('en_US');
-    return format
-        .format(DateTime.fromMillisecondsSinceEpoch(int.parse(timestamp)));
+    final now = DateTime.now();
+    final dateTime = DateTime.fromMillisecondsSinceEpoch(
+      int.parse(timestamp),
+    );
+    if (dateTime.difference(now).inMinutes == 0) {
+      return 'Just now';
+    } else if (dateTime.difference(now).inDays == 1) {
+      return 'Yesterday, ' + DateFormat.jm().format(dateTime);
+    } else if (dateTime.difference(now).inDays == 0) {
+      return DateFormat.jm().format(dateTime);
+    } else if (dateTime.difference(now).inDays <= 7) {
+      return DateFormat('E • h:mm a').format(dateTime);
+    } else if (dateTime.difference(now).inDays <= 365) {
+      return DateFormat('MMM, d • h:mm a').format(dateTime);
+    } else {
+      return DateFormat('MMM d, y • h:mm a').format(dateTime);
+    }
   }
 
   @override
@@ -37,8 +46,8 @@ class MessageBubble extends StatelessWidget {
       ),
       alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
       margin: isSender
-          ? EdgeInsets.only(top: 15, left: pad)
-          : EdgeInsets.only(top: 15, right: pad),
+          ? EdgeInsets.only(top: 7.5, bottom: 7.5, left: pad)
+          : EdgeInsets.only(top: 7.5, bottom: 7.5, right: pad),
       backGroundColor: isSender
           ? isLight
               ? theme.accentColor.withOpacity(0.15)
@@ -49,16 +58,20 @@ class MessageBubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisSize: MainAxisSize.min,
         children: [
-          SelectableText(
-            message,
-            style: GoogleFonts.overlock(
-              fontSize: 17,
-              color: isSender
-                  ? isLight
-                      ? theme.accentColor
-                      : Colors.black
-                  : null,
-            ),
+          Column(
+            children: [
+              SelectableText(
+                message,
+                style: GoogleFonts.overlock(
+                  fontSize: 17,
+                  color: isSender
+                      ? isLight
+                          ? theme.accentColor
+                          : Colors.black
+                      : null,
+                ),
+              ),
+            ],
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
